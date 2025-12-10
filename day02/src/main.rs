@@ -14,9 +14,13 @@ fn main() {
     let ids: Vec<String> = get_ids(&ranges);
     println!("wow, now im stuffed with {} ids!", ids.len());
 
-    //count amount of fake ids:
+    //count total amount of fake:
     let fake_total = get_fake_ids_total(&ids);
     println!("The total amount of fake is {}", fake_total);
+
+    //count amount of fake for part two:
+    let fake_total_too: i64 = get_fake_ids_total_too(&ids);
+    println!("the total amount of fake is {}, too", fake_total_too);
 }
 
 fn get_ranges<P>(filepath: P) -> io::Result<Vec<(i64, i64)>>
@@ -63,5 +67,30 @@ fn get_fake_ids_total(ids: &Vec<String>) -> i64 {
 }
 
 fn get_fake_ids_total_too(ids: &Vec<String>) -> i64 {
-    
+    let mut total: i64 = 0;
+    'outer: for id in ids {
+        let id_length = id.len();
+        // Try each possible chunk size from 1 to half the ID length
+        for chunk_size in 1..=(id_length/2) {
+            if id_length % chunk_size == 0 {
+                let num_chunks = id_length / chunk_size;
+                // Check if all chunks are identical
+                let first_chunk = &id[0..chunk_size];
+                let mut all_equal = true;
+                for chunk_index in 1..num_chunks {
+                    let start = chunk_index * chunk_size;
+                    let end = start + chunk_size;
+                    if &id[start..end] != first_chunk {
+                        all_equal = false;
+                        break;
+                    }
+                }
+                if all_equal {
+                    total += id.parse::<i64>().unwrap();
+                    continue 'outer;
+                }
+            }
+        }
+    }
+    total
 }
